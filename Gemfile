@@ -46,3 +46,5 @@ end
 gem 'grape'
 gem 'rack-cors', :require => 'rack/cors'
 # gem 'grape-jbuilder'
+
+gem 'devise'
