@@ -45,6 +45,12 @@ module V1
 				error!('register failed', 422) unless user.save
 			end
 
+			desc "Get User data"
+			get :user_data do
+				authenticate!
+				current_user
+			end
+
 		end
 	end
 end
