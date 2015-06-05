@@ -14,7 +14,7 @@ module V1
 			def current_user
 				token = ApiKey.where(access_token: request.headers["Authorization"]).first
 				if token && !token.expired?
-					@current_user = User.find(token.user_id)
+					@current_user = token.user
 				else
 					false
 				end

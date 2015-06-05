@@ -1,11 +1,15 @@
 module V1
 	class PetAPI < Base
 
+		before do
+			authenticate!
+		end
+
 	    resource :pets do
 	    	desc  "get pet list"
 	    	get do
 	    		# Pet.all.limit(params[:limit]) if params[:limit]
-	    		Pet.all
+	    		current_user.pets
 	    	end
 
 			desc "Return a pet."
@@ -13,7 +17,7 @@ module V1
 				requires :id, type: Integer, desc: "Pet's id."
 			end
 			get ':id' do
-				Pet.find(params[:id])
+				current_user.pets.find(params[:id])
 			end
 
 			desc "Create a pet."
@@ -24,9 +28,9 @@ module V1
 			end
 			post do
 				pet_params = clean_params(params).require(:pet).permit(:name)
-				pet = Pet.new(pet_params)
+				pet = current_user.pets.build(pet_params)
 				if pet.save
-					Pet.all
+					current_user.pets
 				else
 					error!('create pet failed', 422)
 				end
@@ -40,10 +44,10 @@ module V1
 				end
 			end
 			put ':id' do
-				pet = Pet.find(params[:id])
+				pet = current_user.pets.find_by(id: params[:id])
 				pet_params = clean_params(params).require(:pet).permit(:name)
 				if pet.update(pet_params)
-					Pet.all
+					current_user.pets
 				else
 					error!('update pet failed', 422)
 				end
@@ -54,9 +58,9 @@ module V1
 				requires :id, type: Integer, desc: "Pet's id."
 			end
 			delete ':id' do
-				pet = Pet.find(params[:id])
+				pet = current_user.pets.find_by(id: params[:id])
 				if pet.destroy
-					Pet.all
+					current_user.pets
 				else
 					error!('delete pet failed', 422)
 				end
