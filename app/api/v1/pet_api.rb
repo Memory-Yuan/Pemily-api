@@ -40,7 +40,7 @@ module V1
 				pet_params = clean_params(params).require(:pet).permit(:name)
 				pet = @current_user.pets.build(pet_params)
 				if pet.save
-					@current_user.pets
+					{message: 'success'}
 				else
 					error!('create pet failed', 422)
 				end
@@ -57,7 +57,7 @@ module V1
 				correct_pet!
 				pet_params = clean_params(params).require(:pet).permit(:name)
 				if @correct_pet.update(pet_params)
-					@current_user.pets
+					{message: 'success'}
 				else
 					error!('update pet failed', 422)
 				end
@@ -70,7 +70,7 @@ module V1
 			delete ':id' do
 				correct_pet!
 				if @correct_pet.destroy
-					@current_user.pets
+					{message: 'success'}
 				else
 					error!('delete pet failed', 422)
 				end
