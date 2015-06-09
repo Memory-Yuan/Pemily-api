@@ -20,9 +20,17 @@ module V1
 				end
 			end
 
+			def current_pet
+				@current_pet = current_user.pets.find_by(id: params[:pet_id])
+			end
+
+			def current_pet!
+				error!('Unauthorized. Invalid pet id.', 401) if current_pet.nil?
+			end
 		end
 
 	    mount PetAPI
 	    mount AuthAPI
+	    mount PostAPI
 	end
 end

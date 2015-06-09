@@ -48,7 +48,7 @@ module V1
 			desc "Get User data"
 			get :user_data do
 				authenticate!
-				current_user
+				@current_user
 			end
 
 		end

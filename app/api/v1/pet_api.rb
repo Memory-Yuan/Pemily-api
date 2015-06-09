@@ -5,11 +5,21 @@ module V1
 			authenticate!
 		end
 
+		helpers do
+			def correct_pet
+				@correct_pet = @current_user.pets.find_by(id: params[:id])
+			end
+
+			def correct_pet!
+				error!('Unauthorized. Invalid pet id.', 401) if correct_pet.nil?
+			end
+		end
+
 	    resource :pets do
 	    	desc  "get pet list"
 	    	get do
 	    		# Pet.all.limit(params[:limit]) if params[:limit]
-	    		current_user.pets
+	    		@current_user.pets
 	    	end
 
 			desc "Return a pet."
@@ -17,7 +27,7 @@ module V1
 				requires :id, type: Integer, desc: "Pet's id."
 			end
 			get ':id' do
-				current_user.pets.find(params[:id])
+				@current_user.pets.find(params[:id])
 			end
 
 			desc "Create a pet."
@@ -28,9 +38,9 @@ module V1
 			end
 			post do
 				pet_params = clean_params(params).require(:pet).permit(:name)
-				pet = current_user.pets.build(pet_params)
+				pet = @current_user.pets.build(pet_params)
 				if pet.save
-					current_user.pets
+					@current_user.pets
 				else
 					error!('create pet failed', 422)
 				end
@@ -44,10 +54,10 @@ module V1
 				end
 			end
 			put ':id' do
-				pet = current_user.pets.find_by(id: params[:id])
+				correct_pet!
 				pet_params = clean_params(params).require(:pet).permit(:name)
-				if pet.update(pet_params)
-					current_user.pets
+				if @correct_pet.update(pet_params)
+					@current_user.pets
 				else
 					error!('update pet failed', 422)
 				end
@@ -58,9 +68,9 @@ module V1
 				requires :id, type: Integer, desc: "Pet's id."
 			end
 			delete ':id' do
-				pet = current_user.pets.find_by(id: params[:id])
-				if pet.destroy
-					current_user.pets
+				correct_pet!
+				if @correct_pet.destroy
+					@current_user.pets
 				else
 					error!('delete pet failed', 422)
 				end
