@@ -21,10 +21,11 @@ module V1
 			end
 
 			def current_pet
-				@current_pet = current_user.pets.find_by(id: params[:pet_id])
+				@current_pet = @current_user.pets.find_by(id: params[:pet_id])
 			end
 
 			def current_pet!
+				authenticate!
 				error!('Unauthorized. Invalid pet id.', 401) if current_pet.nil?
 			end
 		end
