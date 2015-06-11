@@ -7,12 +7,12 @@ module V1
 
 		helpers do
 			def correct_post!
-				current_pet!
+				correct_pet!
 				error!('Unauthorized. Invalid post id.', 401) if correct_post.nil?
 			end
 
 			def correct_post
-				@correct_post = @current_pet.posts.find_by(id: params[:id])
+				@correct_post = @correct_pet.posts.find_by(id: params[:post_id])
 			end
 		end
 
@@ -31,9 +31,9 @@ module V1
 				end
 			end
 			post do
-				current_pet!
+				correct_pet!
 				post_prarms = clean_params(params).require(:post).permit(:title, :content)
-				post = @current_pet.posts.build(post_prarms)
+				post = @correct_pet.posts.build(post_prarms)
 				if post.save
 					{message: 'success'}
 				else
@@ -43,13 +43,13 @@ module V1
 
 			desc "Update a post."
 			params do
-				requires :id, type: Integer, desc: "Id of post."
+				requires :post_id, type: Integer, desc: "Id of post."
 				requires :post, type: Hash do
 					requires :title, type: String, desc: "post title"
 					requires :content, type: String, desc: "post content"
 				end
 			end
-			put ':id' do
+			put ':post_id' do
 				correct_post!
 				post_prarms = clean_params(params).require(:post).permit(:title, :content)
 				if @correct_post.update(post_prarms)
@@ -61,9 +61,9 @@ module V1
 
 			desc "Delete a post"
 			params do
-				requires :id, type: Integer, desc: "Id of post."
+				requires :post_id, type: Integer, desc: "Id of post."
 			end
-			delete ':id' do
+			delete ':post_id' do
 				correct_post!
 				if @correct_post.destroy
 					{message: 'success'}
@@ -71,7 +71,6 @@ module V1
 					error!('delete post failed', 422)
 				end
 			end
-
 		end
 	end
 end

@@ -5,16 +5,6 @@ module V1
 			authenticate!
 		end
 
-		helpers do
-			def correct_pet
-				@correct_pet = @current_user.pets.find_by(id: params[:id])
-			end
-
-			def correct_pet!
-				error!('Unauthorized. Invalid pet id.', 401) if correct_pet.nil?
-			end
-		end
-
 	    resource :pets do
 	    	desc  "get pet list"
 	    	get do
@@ -24,10 +14,10 @@ module V1
 
 			desc "Return a pet."
 			params do
-				requires :id, type: Integer, desc: "Pet's id."
+				requires :pet_id, type: Integer, desc: "Pet's id."
 			end
-			get ':id' do
-				@current_user.pets.find(params[:id])
+			get ':pet_id' do
+				@current_user.pets.find(params[:pet_id])
 			end
 
 			desc "Create a pet."
@@ -48,12 +38,12 @@ module V1
 
 			desc "Update a pet."
 			params do
-				requires :id, type: Integer, desc: "Pet's id."
+				requires :pet_id, type: Integer, desc: "Pet's id."
 				requires :pet, type: Hash do
 					requires :name, type: String, desc: "Pet's name."
 				end
 			end
-			put ':id' do
+			put ':pet_id' do
 				correct_pet!
 				pet_params = clean_params(params).require(:pet).permit(:name)
 				if @correct_pet.update(pet_params)
@@ -65,9 +55,9 @@ module V1
 
 			desc "Delete a pet."
 			params do
-				requires :id, type: Integer, desc: "Pet's id."
+				requires :pet_id, type: Integer, desc: "Pet's id."
 			end
-			delete ':id' do
+			delete ':pet_id' do
 				correct_pet!
 				if @correct_pet.destroy
 					{message: 'success'}
