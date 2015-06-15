@@ -15,9 +15,7 @@ module V1
 				token = ApiKey.where(access_token: request.headers["Authorization"]).first
 				if token && !token.expired?
 					@current_user = token.user
-				else
-					false
-				end
+				else false end
 			end
 
 			def correct_pet
