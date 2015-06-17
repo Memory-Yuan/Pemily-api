@@ -5,14 +5,13 @@ module V1
 			authenticate!
 		end
 
-	    resource :pets do
-	    	desc  "get pet list"
+		resource :mypets do
+			desc  "Get user'pet list"
 	    	get do
-	    		# Pet.all.limit(params[:limit]) if params[:limit]
 	    		@current_user.pets
 	    	end
 
-			desc "Return a pet."
+			desc "Return a pet of user"
 			params do
 				requires :pet_id, type: Integer, desc: "Pet's id."
 			end
@@ -64,6 +63,22 @@ module V1
 				else
 					error!('delete pet failed', 422)
 				end
+			end
+		end
+
+	    resource :pets do
+			desc  "Get pet list"
+			get do
+				# Pet.all.limit(params[:limit]) if params[:limit]
+				Pet.all
+			end
+
+			desc "Return a pet."
+			params do
+				requires :pet_id, type: Integer, desc: "Pet's id."
+			end
+			get ':pet_id' do
+				Pet.find(params[:pet_id])
 			end
 	    end
 	end
