@@ -6,4 +6,6 @@ class User < ActiveRecord::Base
 
 	has_many :api_keys, dependent: :destroy
 	has_many :pets, dependent: :destroy
+	has_many :user_pet_follow_ships
+	has_many :followed_pets, through: :user_pet_follow_ships, source: :pet
 end

@@ -80,6 +80,34 @@ module V1
 			get ':pet_id' do
 				Pet.find(params[:pet_id])
 			end
+
+			desc "follow a pet"
+			params do
+				requires :pet_id, type: Integer, desc: "Pet's id."
+			end
+			post ':pet_id/follow' do
+				pet = @current_user.pets.find_by(id: params[:pet_id])
+				error!("can't follow the pet of yours", 422) unless pet.nil?
+				follow_ship = @current_user.user_pet_follow_ships.build(pet_id: params[:pet_id])
+				if follow_ship.save
+					{message: 'success'}
+				else
+					error!('follow failed', 422)
+				end
+			end
+
+			desc "unfollow a pet"
+			params do
+				requires :pet_id, type: Integer, desc: "Pet's id."
+			end
+			delete ':pet_id/unfollow' do
+				follow_ship = @current_user.user_pet_follow_ships.find_by(pet_id: params[:pet_id])
+				if follow_ship and follow_ship.destroy
+					{message: 'success'}
+				else
+					error!('unfollow failed', 422)
+				end
+			end
 	    end
 	end
 end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150610093715) do
+ActiveRecord::Schema.define(version: 20150618090213) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -57,6 +57,17 @@ ActiveRecord::Schema.define(version: 20150610093715) do
 
   add_index "posts", ["pet_id"], name: "index_posts_on_pet_id", using: :btree
 
+  create_table "user_pet_follow_ships", force: :cascade do |t|
+    t.integer  "user_id"
+    t.integer  "pet_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "user_pet_follow_ships", ["pet_id"], name: "index_user_pet_follow_ships_on_pet_id", using: :btree
+  add_index "user_pet_follow_ships", ["user_id", "pet_id"], name: "index_user_pet_follow_ships_on_user_id_and_pet_id", unique: true, using: :btree
+  add_index "user_pet_follow_ships", ["user_id"], name: "index_user_pet_follow_ships_on_user_id", using: :btree
+
   create_table "users", force: :cascade do |t|
     t.string   "email",                  default: "", null: false
     t.string   "encrypted_password",     default: "", null: false
@@ -79,4 +90,6 @@ ActiveRecord::Schema.define(version: 20150610093715) do
   add_foreign_key "comments", "posts"
   add_foreign_key "pets", "users"
   add_foreign_key "posts", "pets"
+  add_foreign_key "user_pet_follow_ships", "pets"
+  add_foreign_key "user_pet_follow_ships", "users"
 end
