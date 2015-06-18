@@ -6,7 +6,7 @@ module V1
 		end
 
 		resource :mypets do
-			desc  "Get user'pet list"
+			desc "Get user'pet list"
 	    	get do
 	    		@current_user.pets
 	    	end

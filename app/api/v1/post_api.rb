@@ -34,9 +34,30 @@ module V1
 
 	    resource :posts do
 
-	    	desc  "Get post list"
+	    	desc "Get all post list"
 	    	get do
 	    		Post.all.to_json(include: [:pet, comments: {include: :pet}])
+	    	end
+
+	    	desc "Return a post."
+			params do
+				requires :post_id, type: Integer, desc: "Id of post."
+			end
+			get ':post_id' do
+				Post.find(params[:post_id])
+			end
+
+	    	desc "Get post of pet"
+	    	params do
+				requires :pet_id, type: Integer, desc: "Id of pet."
+			end
+	    	get 'of_pet/:pet_id' do
+	    		pet = Pet.find_by(id: params[:pet_id])
+	    		if pet.nil?
+	    			error!('Invalid pet id.', 422)
+	    		else
+	    			pet.posts.to_json(include: [:pet, comments: {include: :pet}])
+	    		end
 	    	end
 
 	    	desc "Create post"
@@ -156,11 +177,9 @@ module V1
 						else
 							error!('delete comment failed', 422)
 						end
-					end
-					
+					end	
 				end
 			end
-
 		end
 	end
 end
