@@ -36,7 +36,7 @@ module V1
 
 	    	desc "Get all post list"
 	    	get do
-	    		Post.all.to_json(include: [:pet, comments: {include: :pet}])
+	    		Post.includes(:pet, {comments: :pet}).all.as_json(include: [:pet, comments: {include: :pet}])
 	    	end
 
 	    	desc "Return a post."
@@ -52,11 +52,11 @@ module V1
 				requires :pet_id, type: Integer, desc: "Id of pet."
 			end
 	    	get 'of_pet/:pet_id' do
-	    		pet = Pet.find_by(id: params[:pet_id])
+	    		pet = Pet.includes(posts: [:pet, {comments: :pet}]).find_by(id: params[:pet_id])
 	    		if pet.nil?
 	    			error!('Invalid pet id.', 422)
 	    		else
-	    			pet.posts.to_json(include: [:pet, comments: {include: :pet}])
+	    			pet.posts.as_json(include: [:pet, comments: {include: :pet}])
 	    		end
 	    	end
 
@@ -121,7 +121,7 @@ module V1
 					end
 					get do
 						post = target_post
-						post.comments.to_json(include: [:pet])
+						post.comments.as_json(include: [:pet])
 					end
 
 					desc "Create comment"
