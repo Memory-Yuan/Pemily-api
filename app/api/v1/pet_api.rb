@@ -73,12 +73,21 @@ module V1
 				Pet.all
 			end
 
+			desc "Get my followed pet list"
+			get :myfollowed do
+				@current_user.followed_pets
+			end
+
 			desc "Return a pet."
 			params do
 				requires :pet_id, type: Integer, desc: "Pet's id."
 			end
 			get ':pet_id' do
-				Pet.find(params[:pet_id])
+				pet = Pet.includes(:followers).find(params[:pet_id])
+				pet_json = pet.as_json
+				pet_json["followers_count"] = pet.followers.size
+				pet_json["is_followed"] = pet.followers.where(user_pet_follow_ships: {user_id: @current_user.id}).exists?
+				pet_json
 			end
 
 			desc "follow a pet"
