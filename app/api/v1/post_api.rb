@@ -36,7 +36,10 @@ module V1
 
 	    	desc "Get all post list"
 	    	get do
-	    		Post.includes(:pet, {comments: :pet}).all.as_json(include: [:pet, comments: {include: :pet}])
+	    		page = if params[:page] then params[:page] else 1 end
+	    		per_page = if params[:per_page] then params[:per_page] else 10 end
+    			order = if params[:order] then params[:order] else 'updated_at' end + ' DESC'
+	    		Post.includes(:pet, {comments: :pet}).paginate(page: page, per_page: per_page).order(order).as_json(include: [:pet, comments: {include: :pet}])
 	    	end
 
 	    	desc "Return a post."
