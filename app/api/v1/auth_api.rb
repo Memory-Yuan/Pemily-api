@@ -42,7 +42,7 @@ module V1
 					:password,
 					:password_confirmation)
 				user = User.new(user_params)
-				error!('register failed', 422) unless user.save
+				error!('register failed', 500) unless user.save
 			end
 
 			desc "Get User data"

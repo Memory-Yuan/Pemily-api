@@ -16,7 +16,10 @@ module V1
 				requires :pet_id, type: Integer, desc: "Pet's id."
 			end
 			get ':pet_id' do
-				@current_user.pets.find(params[:pet_id])
+				pet = @current_user.pets.find(params[:pet_id])
+				if pet.nil?
+					error!('Invalid pet id.', 404)
+				else pet end
 			end
 
 			desc "Create a pet."
@@ -28,11 +31,7 @@ module V1
 			post do
 				pet_params = clean_params(params).require(:pet).permit(:name)
 				pet = @current_user.pets.build(pet_params)
-				if pet.save
-					{message: 'success'}
-				else
-					error!('create pet failed', 422)
-				end
+				error!('create pet failed', 500) unless pet.save
 			end
 
 			desc "Update a pet."
@@ -45,11 +44,7 @@ module V1
 			put ':pet_id' do
 				correct_pet!
 				pet_params = clean_params(params).require(:pet).permit(:name)
-				if @correct_pet.update(pet_params)
-					{message: 'success'}
-				else
-					error!('update pet failed', 422)
-				end
+				error!('update pet failed', 500) unless @correct_pet.update(pet_params)
 			end
 
 			desc "Delete a pet."
@@ -58,18 +53,13 @@ module V1
 			end
 			delete ':pet_id' do
 				correct_pet!
-				if @correct_pet.destroy
-					{message: 'success'}
-				else
-					error!('delete pet failed', 422)
-				end
+				error!('delete pet failed', 500) unless @correct_pet.destroy
 			end
 		end
 
 	    resource :pets do
 			desc  "Get pet list"
 			get do
-				# Pet.all.limit(params[:limit]) if params[:limit]
 				Pet.all
 			end
 
@@ -84,6 +74,7 @@ module V1
 			end
 			get ':pet_id' do
 				pet = Pet.includes(:followers).find(params[:pet_id])
+				error!('Invalid pet id.', 404) if pet.nil?
 				pet_json = pet.as_json
 				pet_json["followers_count"] = pet.followers.size
 				pet_json["is_followed"] = pet.followers.where(user_pet_follow_ships: {user_id: @current_user.id}).exists?
@@ -96,13 +87,9 @@ module V1
 			end
 			post ':pet_id/follow' do
 				pet = @current_user.pets.find_by(id: params[:pet_id])
-				error!("can't follow the pet of yours", 422) unless pet.nil?
+				error!("can't follow the pet of yours", 403) unless pet.nil?
 				follow_ship = @current_user.user_pet_follow_ships.build(pet_id: params[:pet_id])
-				if follow_ship.save
-					{message: 'success'}
-				else
-					error!('follow failed', 422)
-				end
+				error!('follow failed', 500) unless follow_ship.save
 			end
 
 			desc "unfollow a pet"
@@ -111,11 +98,7 @@ module V1
 			end
 			delete ':pet_id/unfollow' do
 				follow_ship = @current_user.user_pet_follow_ships.find_by(pet_id: params[:pet_id])
-				if follow_ship and follow_ship.destroy
-					{message: 'success'}
-				else
-					error!('unfollow failed', 422)
-				end
+				error!('unfollow failed', 500) unless (follow_ship and follow_ship.destroy)
 			end
 	    end
 	end

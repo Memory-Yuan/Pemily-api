@@ -27,7 +27,7 @@ module V1
 			def target_post
 				post = Post.find_by(id: params[:post_id])
 				if post.nil?
-					error!('Invalid post id.', 422)
+					error!('Invalid post id.', 404)
 				else post end
 			end
 		end
@@ -47,7 +47,10 @@ module V1
 				requires :post_id, type: Integer, desc: "Id of post."
 			end
 			get ':post_id' do
-				Post.find(params[:post_id])
+				post = Post.find(params[:post_id])
+				if post.nil?
+					error!('Invalid post id.', 404)
+				else post end
 			end
 
 	    	desc "Get post of pet"
@@ -57,7 +60,7 @@ module V1
 	    	get 'of_pet/:pet_id' do
 	    		pet = Pet.includes(posts: [:pet, {comments: :pet}]).find_by(id: params[:pet_id])
 	    		if pet.nil?
-	    			error!('Invalid pet id.', 422)
+	    			error!('Invalid pet id.', 404)
 	    		else
 	    			pet.posts.as_json(include: [:pet, comments: {include: :pet}])
 	    		end
@@ -75,11 +78,7 @@ module V1
 				correct_pet!
 				post_prarms = clean_params(params).require(:post).permit(:title, :content)
 				post = @correct_pet.posts.build(post_prarms)
-				if post.save
-					{message: 'success'}
-				else
-					error!('create post failed', 422)
-				end
+				error!('create post failed', 500) unless post.save
 			end
 
 			desc "Update a post."
@@ -94,11 +93,7 @@ module V1
 			put ':post_id' do
 				correct_post!
 				post_prarms = clean_params(params).require(:post).permit(:title, :content)
-				if @correct_post.update(post_prarms)
-					{message: 'success'}
-				else
-					error!('update pet failed', 422)
-				end
+				error!('update pet failed', 500) unless @correct_post.update(post_prarms)
 			end
 
 			desc "Delete a post"
@@ -108,11 +103,7 @@ module V1
 			end
 			delete ':post_id' do
 				correct_post!
-				if @correct_post.destroy
-					{message: 'success'}
-				else
-					error!('delete post failed', 422)
-				end
+				error!('delete post failed', 500) unless @correct_post.destroy
 			end
 
 			segment '/:post_id' do
@@ -141,11 +132,7 @@ module V1
 						comment_prarms = clean_params(params).require(:comment).permit(:content)
 						comment = post.comments.build(comment_prarms)
 						comment.pet_id = params[:pet_id]
-						if comment.save
-							{message: 'success'}
-						else
-							error!('create comment failed', 422)
-						end
+						error!('create comment failed', 500) unless comment.save
 					end
 
 					desc "Update a post."
@@ -160,11 +147,7 @@ module V1
 					put '/:comment_id' do
 						correct_comment!
 						comment_prarms = clean_params(params).require(:comment).permit(:content)
-						if @correct_comment.update(comment_prarms)
-							{message: 'success'}
-						else
-							error!('update comment failed', 422)
-						end
+						error!('update comment failed', 500) unless @correct_comment.update(comment_prarms)
 					end
 
 					desc "Delete a comment"
@@ -175,11 +158,7 @@ module V1
 					end
 					delete '/:comment_id' do
 						correct_comment!
-						if @correct_comment.destroy
-							{message: 'success'}
-						else
-							error!('delete comment failed', 422)
-						end
+						error!('delete comment failed', 500) unless @correct_comment.destroy
 					end	
 				end
 			end
