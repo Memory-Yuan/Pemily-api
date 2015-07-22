@@ -28,6 +28,7 @@ module V1
 			end
 		end
 
+		mount UserAPI
 	    mount PetAPI
 	    mount AuthAPI
 	    mount PostAPI

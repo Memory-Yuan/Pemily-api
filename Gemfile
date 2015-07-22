@@ -50,3 +50,5 @@ gem 'rack-cors', :require => 'rack/cors'
 gem 'devise'
 
 gem 'will_paginate'
+
+gem 'paperclip'
