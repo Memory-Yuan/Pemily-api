@@ -8,7 +8,7 @@ module V1
 		resource :mypets do
 			desc "Get user'pet list"
 	    	get do
-	    		@current_user.pets
+	    		@current_user.pets.as_json(methods: [:avatar_url, :cover_url])
 	    	end
 
 			desc "Return a pet of user"
@@ -19,7 +19,9 @@ module V1
 				pet = @current_user.pets.find(params[:pet_id])
 				if pet.nil?
 					error!('Invalid pet id.', 404)
-				else pet end
+				else
+					pet.as_json(methods: [:avatar_url, :cover_url])
+				end
 			end
 
 			desc "Create a pet."
@@ -55,17 +57,37 @@ module V1
 				correct_pet!
 				error!('delete pet failed', 500) unless @correct_pet.destroy
 			end
+
+			desc "Upload pet avatar/cover."
+			params do
+				optional :avatar, type: Rack::Multipart::UploadedFile, desc: "image file."
+				optional :cover, type: Rack::Multipart::UploadedFile, desc: "image file."
+				requires :file_type, type: Integer, desc: "type of file; 0: avatar, 1: cover"
+				requires :pet_id, type: Integer, desc: "Pet's id."
+			end
+	    	post ':pet_id/upload_picture' do
+	    		correct_pet!
+	    		if params[:file_type] == 0
+					@correct_pet.avatar = params[:avatar][:tempfile]
+					error!('upload failed', 500) unless @correct_pet.save
+				elsif params[:file_type] == 1
+					@correct_pet.cover = params[:cover][:tempfile]
+					error!('upload failed', 500) unless @correct_pet.save
+				else
+					error!('Invalid file type', 404)
+				end
+	    	end
 		end
 
 	    resource :pets do
 			desc  "Get pet list"
 			get do
-				Pet.all
+				Pet.all.as_json(methods: [:avatar_url, :cover_url])
 			end
 
 			desc "Get my followed pet list"
 			get :myfollowed do
-				@current_user.followed_pets
+				@current_user.followed_pets.as_json(methods: [:avatar_url, :cover_url])
 			end
 
 			desc "Return a pet."
@@ -75,7 +97,7 @@ module V1
 			get ':pet_id' do
 				pet = Pet.includes(:followers).find(params[:pet_id])
 				error!('Invalid pet id.', 404) if pet.nil?
-				pet_json = pet.as_json
+				pet_json = pet.as_json(methods: [:avatar_url, :cover_url])
 				pet_json["followers_count"] = pet.followers.size
 				pet_json["is_followed"] = pet.followers.where(user_pet_follow_ships: {user_id: @current_user.id}).exists?
 				pet_json

@@ -39,7 +39,13 @@ module V1
 	    		page = if params[:page] then params[:page] else 1 end
 	    		per_page = if params[:per_page] then params[:per_page] else 10 end
     			order = if params[:order] then params[:order] else 'updated_at' end + ' DESC'
-	    		Post.includes(:pet, {comments: :pet}).paginate(page: page, per_page: per_page).order(order).as_json(include: [:pet, comments: {include: :pet}])
+	    		Post.includes(:pet, {comments: :pet})
+	    			.paginate(page: page, per_page: per_page)
+	    			.order(order)
+	    			.as_json(include: [
+	    				{pet: {methods: :avatar_url}},
+	    				{comments: {include: {pet: {methods: :avatar_url}}}}
+    				])
 	    	end
 
 	    	desc "Return a post."
@@ -47,7 +53,12 @@ module V1
 				requires :post_id, type: Integer, desc: "Id of post."
 			end
 			get ':post_id' do
-				post = Post.find(params[:post_id])
+				post = Post.includes(:pet, {comments: :pet})
+						   .find(params[:post_id])
+						   .as_json(include: [
+			    				{pet: {methods: :avatar_url}},
+			    				{comments: {include: {pet: {methods: :avatar_url}}}}
+		    				])
 				if post.nil?
 					error!('Invalid post id.', 404)
 				else post end
@@ -62,7 +73,10 @@ module V1
 	    		if pet.nil?
 	    			error!('Invalid pet id.', 404)
 	    		else
-	    			pet.posts.as_json(include: [:pet, comments: {include: :pet}])
+	    			pet.posts.as_json(include: [
+	    				{pet: {methods: :avatar_url}},
+	    				{comments: {include: {pet: {methods: :avatar_url}}}}
+    				])
 	    		end
 	    	end
 
@@ -115,7 +129,7 @@ module V1
 					end
 					get do
 						post = target_post
-						post.comments.as_json(include: [:pet])
+						post.comments.as_json(include: {pet: {methods: :avatar_url}})
 					end
 
 					desc "Create comment"
